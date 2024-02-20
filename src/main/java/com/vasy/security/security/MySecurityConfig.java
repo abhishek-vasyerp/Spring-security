@@ -1,10 +1,10 @@
 package com.vasy.security.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -13,65 +13,45 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
+import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
 public class MySecurityConfig {
 
-	@Bean
-	public static PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
-
+	
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.csrf(Customizer.withDefaults())
+		http
 		
 				.authorizeHttpRequests(
 						authorizeRequests -> authorizeRequests
-								.requestMatchers("/customLogin").permitAll()
-								.requestMatchers("/admin/**").hasRole("ADMIN")
-								.requestMatchers("/user/**").hasRole("USER")
-								.anyRequest().authenticated())
+								.requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
+								.requestMatchers("/user/**").hasAnyAuthority("USER","ADMIN")
+								.requestMatchers("/public/**").permitAll()
+								.anyRequest().permitAll())
 								
 				.formLogin(	
 					// Customizer.withDefaults()
 					
 					formLogin -> formLogin
-					// .loginPage("/customLogin")        
+					 //.loginPage("/customLogin")        
 					// .loginProcessingUrl("/authenticateTheUser") 
 					// .permitAll()
-					.successHandler(new MyUniqueAuthenticationHandler())   		
-				)
+					.successHandler(new MyUniqueAuthenticationHandler()))   		
+				
 
-				.logout(logout -> logout
-                .permitAll())
+				.logout(logout -> logout.permitAll());
+                //.permitAll())
 			
-;
 		return http.build();
 	}
+	
 	@Bean
-	public InMemoryUserDetailsManager userDetailManager(
-			@Value("${security.users.admin2.name}") String adminUsername,
-			@Value("${security.users.admin2.password}") String adminPassword,
-			@Value("${security.users.admin2.roles}") String adminRoles,
-			@Value("${security.users.user2.name}") String userUsername,
-			@Value("${security.users.user2.password}") String userPassword,
-			@Value("${security.users.user2.roles}") String userRoles) {
-	
-		UserDetails admin = User.withUsername(adminUsername)
-				.password(passwordEncoder().encode(adminPassword))
-				.roles(adminRoles.split(","))
-				.build();
-	
-		UserDetails user = User.withUsername(userUsername)
-				.password(passwordEncoder().encode(userPassword))
-				.roles(userRoles)
-				.build();
-				System.out.println(admin);
-				System.out.println(user);
-		return new InMemoryUserDetailsManager(admin, user);
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
 	}
 	
 }

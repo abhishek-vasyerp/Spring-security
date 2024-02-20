@@ -16,17 +16,21 @@ public class MyUniqueAuthenticationHandler implements AuthenticationSuccessHandl
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-            Authentication authentication) throws IOException, ServletException {
-       
+                                        Authentication authentication) throws IOException, ServletException {
+
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+
+        System.out.println(role);
+
         List<GrantedAuthority> authorities = new ArrayList<>(authentication.getAuthorities());
         for (GrantedAuthority authority : authorities) {
-            if (authority.getAuthority().equals("ROLE_ADMIN")) {
+            if (authority.getAuthority().equals("ADMIN")) {
                 response.sendRedirect("/admin");
                 return;
             }
             response.sendRedirect("/user");
         }
 
+       
     }
-
 }
