@@ -35,7 +35,7 @@ public class RoleController {
 	}
 	
 	
-	@PostMapping("/addUser")
+	@PostMapping("/add-User")
 	public String addUser(UserDetailDto userDetailDto) {
 		System.out.println(userDetailDto);
 		try {
