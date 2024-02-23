@@ -25,5 +25,12 @@ public class DemoController {
 		ModelAndView mav = new ModelAndView("LoginPage");
 		return mav;
 	}
+	
+	@GetMapping("/register")
+	public ModelAndView register() {
+		ModelAndView mav = new ModelAndView("RegisterPage");
+		return mav;
+	}
+
 
 }
